@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Carousel</title>
+</head>
+
+<body>
+
+    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="false">
+
+        <div class="carousel-inner">
+        </div>
+
+        <!-- Butonlar -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls"
+            data-bs-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls"
+            data-bs-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+
+    </div>
+
+
+    <style>
+        .carousel-inner img {
+            border: 2px solid black;
+        }
+
+        .check-button {
+            position: fixed;
+            right: 1em;
+            bottom: 1em;
+        }
+
+        .carousel-control-next-icon {
+            background-image: url(https://cdn-icons-png.freepik.com/512/318/318476.png);
+        }
+
+        .carousel-control-prev-icon {
+            background-image: url(https://cdn-icons-png.freepik.com/512/318/318476.png);
+            transform: rotate(180deg);
+        }
+
+        .carousel-control-next, .carousel-control-prev {
+            bottom: 30vh !important;
+        }
+    </style>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function checkProduct(product_code, btnID) {
+            fetch('http://78.188.232.178:4001/check-product', {
+                method: 'POST',
+                body: JSON.stringify({ product_code })
+            })
+                .then(e => {
+                    console.log(btnID)
+                    console.log()
+                    const el = document.querySelector(`#${btnID}`)
+
+                    if ([...el.classList].includes('btn-success')) {
+                        el.className = el.className.replace('btn-success', 'btn-primary')
+                        el.innerText = 'Ürünü Ekle'
+                    } else {
+                        el.className = el.className.replace('btn-primary', 'btn-success')
+                        el.innerText = 'Ürün Eklendi Kaldırmak İçin Basın'
+                    }
+                })
+        }
+
+        function GetOrders() {
+            fetch('http://78.188.232.178:4001/get-orders')
+                .then(res => res.json())
+                .then(res => {
+                    console.log(res.data.table_json)
+
+                    document.querySelector('.carousel-inner').innerHTML = '';
+                    res.data.table_json.forEach((product, index) => {
+                        document.querySelector('.carousel-inner').innerHTML += (`
+                            <div class="carousel-item ${index === 0 ? 'active' : ''}">
+                                <img class="d-block w-100" src="http://78.188.232.178:4001/static-images/${product.image}" />
+
+                                <button id="btn${index}" onclick="checkProduct('${product.product_code}', 'btn${index}')" class="check-button btn ${product.checked ? 'btn-success' : 'btn-primary'} btn-sm"> 
+                                    ${product.checked ? 'Ürün Eklendi Kaldırmak İçin Basın' : 'Ürünü Ekle'}
+                                </button>
+
+                                <div class="product-details p-2">
+                                    <b>SIRA:</b> ${index + 1}/${res.data.table_json.length} <br />
+                                    <span> <b>Ürün Adı:</b> ${product.product_name} </span> <br />
+                                    <span> <b>Ürün Kodu:</b> ${product.product_code} </span> <br />
+                                    <span> <b>Renk:</b> ${product.color} </span>
+
+                                    <br /> <br />
+                                    <p>
+                                        <span> <b>Reyhanlı Mavi:</b> ${product.lot.reyhanli_mavi} Lot <b>${product.lot.reyhanli_mavi > 1 ? 'DEPO' : ''}</b> </span> <br/>
+                                        <span> <b>Reyhanlı Koton:</b> ${product.lot.reyhanli_koton} Lot <b>${product.lot.reyhanli_koton > 1 ? 'DEPO' : ''}</b> </span> <br/>
+                                        <span> <b>İslahiye:</b> ${product.lot.islahiye} Lot <b>${product.lot.islahiye > 1 ? 'DEPO' : ''}</b> </span> <br/>
+                                        <span> <b>Suruç:</b> ${product.lot.suruc} Lot <b>${product.lot.suruc > 1 ? 'DEPO' : ''}</b> </span> <br/>
+                                    </p>
+                                </div>
+                            </div>
+                        `)
+                    });
+
+
+                })
+        }
+
+        GetOrders()
+    </script>
+</body>
+
+</html>
