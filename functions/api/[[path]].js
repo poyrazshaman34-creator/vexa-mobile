@@ -4,9 +4,14 @@ export async function onRequest(context) {
 
   const response = await fetch("http://78.188.232.178:4001/" + path, {
     method: context.request.method,
-    headers: context.request.headers,
-    body: context.request.body
+    headers: {
+      "Content-Type": context.request.headers.get("Content-Type") || "application/json"
+    },
+    body: context.request.method !== "GET" ? await context.request.text() : undefined
   });
 
-  return new Response(response.body, response);
+  return new Response(response.body, {
+    status: response.status,
+    headers: response.headers
+  });
 }
